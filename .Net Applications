@@ -1,0 +1,982 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ExportDataToExcel
+{
+    internal class Common_Methods
+    {
+        //1:File I/O Operations
+        public interface IFileManager
+        {
+            void CreateDirectory(string path);
+            void DeleteDirectory(string path);
+            void CreateFile(string path, string contents);
+            string ReadFile(string path);
+            void WriteFile(string path, string contents);
+            void DeleteFile(string path);
+        }
+
+        public class LocalFileManager : IFileManager
+        {
+            public void CreateDirectory(string path)
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            public void DeleteDirectory(string path)
+            {
+                Directory.Delete(path, true);
+            }
+
+            public void CreateFile(string path, string contents)
+            {
+                using (var writer = new StreamWriter(path))
+                {
+                    writer.Write(contents);
+                }
+            }
+
+            public string ReadFile(string path)
+            {
+                using (var reader = new StreamReader(path))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+
+            public void WriteFile(string path, string contents)
+            {
+                using (var writer = new StreamWriter(path, true))
+                {
+                    writer.Write(contents);
+                }
+            }
+
+            public void DeleteFile(string path)
+            {
+                File.Delete(path);
+            }
+        }
+
+        //2:Database Operations
+        public interface IDatabaseManager
+        {
+            void CreateRecord(string tableName, Dictionary<string, object> values);
+            List<Dictionary<string, object>> ReadRecords(string tableName, string[] columns);
+            void UpdateRecord(string tableName, int recordId, Dictionary<string, object> values);
+            void DeleteRecord(string tableName, int recordId);
+        }
+
+        public class SqlDatabaseManager : IDatabaseManager
+        {
+            public void CreateRecord(string tableName, Dictionary<string, object> values)
+            {
+                // implementation for creating record in SQL database
+            }
+
+            public List<Dictionary<string, object>> ReadRecords(string tableName, string[] columns)
+            {
+                // implementation for reading records from SQL database
+            }
+
+            public void UpdateRecord(string tableName, int recordId, Dictionary<string, object> values)
+            {
+                // implementation for updating record in SQL database
+            }
+
+            public void DeleteRecord(string tableName, int recordId)
+            {
+                // implementation for deleting record from SQL database
+            }
+        }
+
+        public interface INetworkManager
+        {
+            string SendRequest(string url, string method, string data);
+            void DownloadFile(string url, string path);
+            void UploadFile(string url, string path);
+        }
+
+        //3:Networking
+        public class HttpNetworkManager : INetworkManager
+        {
+            public string SendRequest(string url, string method, string data)
+            {
+                // implementation for sending HTTP request
+            }
+
+            public void DownloadFile(string url, string path)
+            {
+                // implementation for downloading file using HTTP
+            }
+
+            public void UploadFile(string url, string path)
+            {
+                // implementation for uploading file using HTTP
+            }
+        }
+
+        //4:MultiThreading
+        public interface IThreadManager
+        {
+            void StartNewThread(Action action);
+            void Sleep(int milliseconds);
+        }
+
+        public class DefaultThreadManager : IThreadManager
+        {
+            public void StartNewThread(Action action)
+            {
+                var thread = new Thread(() => action());
+                thread.Start();
+            }
+
+            public void Sleep(int milliseconds)
+            {
+                Thread.Sleep(milliseconds);
+            }
+        }
+
+        //5:Reflection Method
+        public interface IReflectionManager
+        {
+            void GetProperties(object obj);
+            void InvokeMethod(object obj, string methodName, object[] parameters);
+        }
+
+        public class DefaultReflectionManager : IReflectionManager
+        {
+            public void GetProperties(object obj)
+            {
+                var properties = obj.GetType().GetProperties();
+                foreach (var property in properties)
+                {
+                    Console.WriteLine(property.Name);
+                }
+            }
+
+            public void InvokeMethod(object obj, string methodName, object[] parameters)
+            {
+                var method = obj.GetType().GetMethod(methodName);
+                method.Invoke(obj, parameters);
+            }
+
+        }
+
+
+        //6:XML Processing
+        public interface IXmlManager
+        {
+            XmlDocument LoadXml(string xmlString);
+            void SaveXml(XmlDocument xmlDocument, string fileName);
+            XmlNodeList SelectNodes(XmlNode rootNode, string xpath);
+            void CreateAttribute(XmlNode node, string name, string value);
+        }
+
+        public class DefaultXmlManager : IXmlManager
+        {
+            public XmlDocument LoadXml(string xmlString)
+            {
+                var xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xmlString);
+                return xmlDocument;
+            }
+
+            public void SaveXml(XmlDocument xmlDocument, string fileName)
+            {
+                xmlDocument.Save(fileName);
+            }
+
+            public XmlNodeList SelectNodes(XmlNode rootNode, string xpath)
+            {
+                return rootNode.SelectNodes(xpath);
+            }
+
+            public void CreateAttribute(XmlNode node, string name, string value)
+            {
+                var attribute = node.OwnerDocument.CreateAttribute(name);
+                attribute.Value = value;
+                node.Attributes.Append(attribute);
+            }
+        }
+
+        //7:LINQ
+        public interface ILinqManager<T>
+        {
+            IEnumerable<T> Query(IEnumerable<T> source, Func<T, bool> predicate);
+            T FirstOrDefault(IEnumerable<T> source, Func<T, bool> predicate);
+            int Count(IEnumerable<T> source, Func<T, bool> predicate);
+        }
+
+        public class DefaultLinqManager<T> : ILinqManager<T>
+        {
+            public IEnumerable<T> Query(IEnumerable<T> source, Func<T, bool> predicate)
+            {
+                return source.Where(predicate);
+            }
+
+            public T FirstOrDefault(IEnumerable<T> source, Func<T, bool> predicate)
+            {
+                return source.FirstOrDefault(predicate);
+            }
+
+            public int Count(IEnumerable<T> source, Func<T, bool> predicate)
+            {
+                return source.Count(predicate);
+            }
+        }
+
+
+        //8:Serialization
+        public interface ISerializationManager
+        {
+            string Serialize<T>(T obj);
+            T Deserialize<T>(string data);
+        }
+
+        public class DefaultSerializationManager : ISerializationManager
+        {
+            public string Serialize<T>(T obj)
+            {
+                var serializer = new XmlSerializer(typeof(T));
+                using (var writer = new StringWriter())
+                {
+                    serializer.Serialize(writer, obj);
+                    return writer.ToString();
+                }
+            }
+            public T Deserialize<T>(string data)
+            {
+                var serializer = new XmlSerializer(typeof(T));
+                using (var reader = new StringReader(data))
+                {
+                    return (T)serializer.Deserialize(reader);
+                }
+            }
+        }
+
+        //9:Regular Expressions
+        public interface IRegexManager
+        {
+            bool IsMatch(string input, string pattern);
+            string Replace(string input, string pattern, string replacement);
+        }
+
+        public class DefaultRegexManager : IRegexManager
+        {
+            public bool IsMatch(string input, string pattern)
+            {
+                return Regex.IsMatch(input, pattern);
+            }
+            public string Replace(string input, string pattern, string replacement)
+            {
+                return Regex.Replace(input, pattern, replacement);
+            }
+        }
+
+        //10:Security
+        public interface ISecurityManager
+        {
+            string Encrypt(string data, string key);
+            string Decrypt(string data, string key);
+            string Hash(string data);
+        }
+
+        public class DefaultSecurityManager : ISecurityManager
+        {
+            public virtual string Encrypt(string data, string key)
+            {
+                byte[] clearBytes = Encoding.Unicode.GetBytes(data);
+                using (Aes aes = Aes.Create())
+                {
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[]
+                    {
+                0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65,
+                0x64, 0x65, 0x76
+                    });
+                    aes.Key = pdb.GetBytes(32);
+                    aes.IV = pdb.GetBytes(16);
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms,
+                            aes.CreateEncryptor(), CryptoStreamMode.Write))
+                        {
+                            cs.Write(clearBytes, 0, clearBytes.Length);
+                            cs.Close();
+                        }
+                        data = Convert.ToBase64String(ms.ToArray());
+                    }
+                }
+                return data;
+            }
+
+            public virtual string Decrypt(string data, string key)
+            {
+                data = data.Replace(" ", "+");
+                byte[] cipherBytes = Convert.FromBase64String(data);
+                using (Aes aes = Aes.Create())
+                {
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[]
+                    {
+                0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65,
+                0x64, 0x65, 0x76
+                    });
+                    aes.Key = pdb.GetBytes(32);
+                    aes.IV = pdb.GetBytes(16);
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms,
+                            aes.CreateDecryptor(), CryptoStreamMode.Write))
+                        {
+                            cs.Write(cipherBytes, 0, cipherBytes.Length);
+                            cs.Close();
+                        }
+                        data = Encoding.Unicode.GetString(ms.ToArray());
+                    }
+                }
+                return data;
+            }
+
+            public virtual string Hash(string data)
+            {
+                using (SHA256 sha256Hash = SHA256.Create())
+                {
+                    byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(data));
+
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < bytes.Length; i++)
+                    {
+                        builder.Append(bytes[i].ToString("x2"));
+                    }
+                    return builder.ToString();
+                }
+            }
+        }
+
+        //11:Caching
+        public interface ICache
+        {
+            void Add(string key, object value);
+            object Get(string key);
+            bool Remove(string key);
+        }
+
+        public class DefaultCache : ICache
+        {
+            private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
+
+            public virtual void Add(string key, object value)
+            {
+                _cache.Set(key, value);
+            }
+
+            public virtual object Get(string key)
+            {
+                return _cache.Get(key);
+            }
+
+            public virtual bool Remove(string key)
+            {
+                return _cache.Remove(key);
+            }
+        }
+
+        //12:Rest API Calls
+        public interface IRestClient
+        {
+            T Get<T>(string url);
+            void Post(string url, object data);
+            void Put(string url, object data);
+            void Delete(string url);
+        }
+
+        public class DefaultRestClient : IRestClient
+        {
+            private readonly HttpClient _client;
+
+            public DefaultRestClient()
+            {
+                _client = new HttpClient();
+            }
+
+            public virtual T Get<T>(string url)
+            {
+                var response = _client.GetAsync(url).Result;
+                var content = response.Content.ReadAsStringAsync().Result;
+                return JsonConvert.DeserializeObject<T>(content);
+            }
+
+            public virtual void Post(string url, object data)
+            {
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = _client.PostAsync(url, content).Result;
+                response.EnsureSuccessStatusCode();
+            }
+
+            public virtual void Put(string url, object data)
+            {
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = _client.PutAsync(url, content).Result;
+                response.EnsureSuccessStatusCode();
+            }
+
+            public virtual void Delete(string url)
+            {
+                var response = _client.DeleteAsync(url).Result;
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        //13:Object Mapping
+        public interface IMapper
+        {
+            TDestination Map<TSource, TDestination>(TSource source);
+        }
+
+        public class AutoMapper : IMapper
+        {
+            public TDestination Map<TSource, TDestination>(TSource source)
+            {
+                return Mapper.Map<TSource, TDestination>(source);
+            }
+        }
+
+        //14:Dependency Injection
+        public interface IDependencyResolver
+        {
+            T Resolve<T>();
+        }
+
+        public class UnityDependencyResolver : IDependencyResolver
+        {
+            private readonly IUnityContainer _container;
+
+            public UnityDependencyResolver(IUnityContainer container)
+            {
+                _container = container;
+            }
+
+            public T Resolve<T>()
+            {
+                return _container.Resolve<T>();
+            }
+        }
+
+        //15:Unit Of Work
+        public interface IUnitOfWork : IDisposable
+        {
+            IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
+            void SaveChanges();
+        }
+
+        public class EfUnitOfWork : IUnitOfWork
+        {
+            private readonly DbContext _context;
+            private readonly IDictionary<Type, object> _repositories;
+
+            public EfUnitOfWork(DbContext context)
+            {
+                _context = context;
+                _repositories = new Dictionary<Type, object>();
+            }
+
+            public IRepository<TEntity> GetRepository<TEntity>() where TEntity : class
+            {
+                var type = typeof(TEntity);
+                if (!_repositories.ContainsKey(type))
+                {
+                    var repositoryType = typeof(EfRepository<>).MakeGenericType(type);
+                    var repository = Activator.CreateInstance(repositoryType, _context);
+                    _repositories[type] = repository;
+                }
+                return (IRepository<TEntity>)_repositories[type];
+            }
+
+            public void SaveChanges()
+            {
+                _context.SaveChanges();
+            }
+
+            public void Dispose()
+            {
+                _context.Dispose();
+            }
+        }
+
+        //16:Messaging
+        public interface IMessageBus
+        {
+            void Send<T>(T message);
+            void Subscribe<T>(Action<T> handler);
+        }
+
+        public class RabbitMqMessageBus : IMessageBus
+        {
+            private readonly IConnection _connection;
+            private readonly IModel _channel;
+
+            public RabbitMqMessageBus(string connectionString)
+            {
+                var factory = new ConnectionFactory { Uri = connectionString };
+                _connection = factory.CreateConnection();
+                _channel = _connection.CreateModel();
+            }
+
+            public void Send<T>(T message)
+            {
+                var json = JsonConvert.SerializeObject(message);
+                var body = Encoding.UTF8.GetBytes(json);
+                _channel.BasicPublish(exchange: "", routingKey: typeof(T).Name, basicProperties: null, body: body);
+            }
+
+            public void Subscribe<T>(Action<T> handler)
+            {
+                var consumer = new EventingBasicConsumer(_channel);
+                consumer.Received += (model, ea) =>
+                {
+                    var body = ea.Body.ToArray();
+                    var json = Encoding.UTF8.GetString(body);
+                    var message = JsonConvert.DeserializeObject<T>(json);
+                    handler(message);
+                };
+                _channel.BasicConsume(queue: typeof(T).Name, autoAck: true, consumer: consumer);
+            }
+        }
+
+        //17:Configuration
+        public interface IConfigurationProvider
+        {
+            string GetValue(string key);
+        }
+
+        public class AppSettingsConfigurationProvider : IConfigurationProvider
+        {
+            public string GetValue(string key)
+            {
+                return ConfigurationManager.AppSettings[key];
+            }
+        }
+
+        //18:Performance Counters
+        public interface IPerformanceCounterProvider
+        {
+            void Increment(string category, string counter);
+            void Decrement(string category, string counter);
+            void Set(string category, string counter, long value);
+        }
+
+        public class PerformanceCounterProvider : IPerformanceCounterProvider
+        {
+            public void Increment(string category, string counter)
+            {
+                using (var pc = new PerformanceCounter(category, counter, false))
+                {
+                    pc.Increment();
+                }
+            }
+
+            public void Decrement(string category, string counter)
+            {
+                using (var pc = new PerformanceCounter(category, counter, false))
+                {
+                    pc.Decrement();
+                }
+            }
+
+            public void Set(string category, string counter, long value)
+            {
+                using (var pc = new PerformanceCounter(category, counter, false))
+                {
+                    pc.RawValue = value;
+                }
+            }
+        }
+
+        //19:Compression
+        public interface ICompressionProvider
+        {
+            byte[] Compress(byte[] data);
+            byte[] Decompress(byte[] data);
+        }
+
+        public class GZipCompressionProvider : ICompressionProvider
+        {
+            public byte[] Compress(byte[] data)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    using (var gzip = new GZipStream(ms, CompressionMode.Compress))
+                    {
+                        gzip.Write(data, 0, data.Length);
+                    }
+                    return ms.ToArray();
+                }
+            }
+
+            public byte[] Decompress(byte[] data)
+            {
+                using (var ms = new MemoryStream(data))
+                {
+                    using (var gzip = new GZipStream(ms, CompressionMode.Decompress))
+                    {
+                        using (var output = new MemoryStream())
+                        {
+                            gzip.CopyTo(output);
+                            return output.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+
+        //20:Object Pooling
+        public interface IPool<T>
+        {
+            T Acquire();
+            void Release(T obj);
+        }
+
+        public class ObjectPool<T> : IPool<T> where T : new()
+        {
+            private readonly ConcurrentBag<T> _objects = new ConcurrentBag<T>();
+
+            public T Acquire()
+            {
+                T item;
+                if (_objects.TryTake(out item)) return item;
+                return new T();
+            }
+
+            public void Release(T obj)
+            {
+                _objects.Add(obj);
+            }
+        }
+
+        //21:Object Validation
+        public interface IValidatorProvider
+        {
+            bool Validate<T>(T obj, out ICollection<string> errors);
+        }
+
+        public class DataAnnotationsValidatorProvider : IValidatorProvider
+        {
+            public bool Validate<T>(T obj, out ICollection<string> errors)
+            {
+                var results = new List<ValidationResult>();
+                var context = new ValidationContext(obj, serviceProvider: null, items: null);
+                var isValid = Validator.TryValidateObject(obj, context, results, true);
+                errors = results.Select(x => x.ErrorMessage).ToList();
+                return isValid;
+            }
+        }
+
+        //22:Performance Timing
+        public interface ITimerProvider
+        {
+            void Start();
+            TimeSpan Stop();
+        }
+
+        public class StopwatchTimerProvider : ITimerProvider
+        {
+            private readonly Stopwatch _stopwatch = new Stopwatch();
+
+            public void Start()
+            {
+                _stopwatch.Reset();
+                _stopwatch.Start();
+            }
+
+            public TimeSpan Stop()
+            {
+                _stopwatch.Stop();
+                return _stopwatch.Elapsed;
+            }
+        }
+
+        //23:Image Manipulation
+        public interface IImageManipulationProvider
+        {
+            void Resize(string sourcePath, string destinationPath, int width, int height);
+        }
+
+        public class ImageSharpManipulationProvider : IImageManipulationProvider
+        {
+            public void Resize(string sourcePath, string destinationPath, int width, int height)
+            {
+                using (var image = Image.Load(sourcePath))
+                {
+                    image.Mutate(x => x.Resize(new Size(width, height)));
+                    image.Save(destinationPath);
+                }
+            }
+        }
+
+        //24:Authentication And Authorization
+        public interface IAuthenticationService
+        {
+            bool Authenticate(string username, string password);
+        }
+
+        public class FormsAuthenticationService : IAuthenticationService
+        {
+            public bool Authenticate(string username, string password)
+            {
+                return FormsAuthentication.Authenticate(username, password);
+            }
+        }
+
+        public interface IAuthorizationService
+        {
+            bool Authorize(string userName, string role);
+        }
+
+        public class RoleBasedAuthorizationService : IAuthorizationService
+        {
+            public bool Authorize(string userName, string role)
+            {
+                var roles = Roles.GetRolesForUser(userName);
+                return roles.Contains(role);
+            }
+        }
+
+        //25:PDF Generation
+        public interface IPdfGenerator
+        {
+            byte[] GeneratePdf(string html);
+        }
+
+        public class PdfSharpGenerator : IPdfGenerator
+        {
+            public byte[] GeneratePdf(string html)
+            {
+                using (var document = PdfGenerator.GeneratePdf(html, PageSize.A4))
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        document.Save(stream, false);
+                        return stream.ToArray();
+                    }
+                }
+            }
+        }
+
+        //26:Text Parsing
+        public interface ITextParser
+        {
+            IEnumerable<string> ParseLines(string text);
+        }
+
+        public class StringSplitTextParser : ITextParser
+        {
+            public IEnumerable<string> ParseLines(string text)
+            {
+                return text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            }
+        }
+
+        //27:Random Number Generation
+        public interface IRandomNumberGenerator
+        {
+            int GetRandomInt(int min, int max);
+        }
+
+        public class DefaultRandomNumberGenerator : IRandomNumberGenerator
+        {
+            private readonly Random _random = new Random();
+
+            public int GetRandomInt(int min, int max)
+            {
+                return _random.Next(min, max);
+            }
+        }
+
+        //28:HTTP Client
+        public interface IHttpClient
+        {
+            Task<string> GetStringAsync(string url);
+            Task<HttpResponseMessage> PostAsync<T>(string url, T data);
+        }
+
+        public class DefaultHttpClient : IHttpClient
+        {
+            private readonly HttpClient _httpClient = new HttpClient();
+
+            public async Task<string> GetStringAsync(string url)
+            {
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }
+
+            public async Task<HttpResponseMessage> PostAsync<T>(string url, T data)
+            {
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                return await _httpClient.PostAsync(url, content);
+            }
+        }
+
+        //29:Localization/Globalization
+        public interface ILocalizationService
+        {
+            string GetLocalizedString(string key);
+        }
+
+        public class EnglishLocalizationService : ILocalizationService
+        {
+            private readonly Dictionary<string, string> _localizationDictionary;
+
+            public EnglishLocalizationService()
+            {
+                _localizationDictionary = new Dictionary<string, string>()
+        {
+            { "greeting", "Hello, world!" },
+            { "farewell", "Goodbye!" }
+        };
+            }
+
+            public string GetLocalizedString(string key)
+            {
+                return _localizationDictionary.ContainsKey(key) ? _localizationDictionary[key] : key;
+            }
+        }
+
+        public class SpanishLocalizationService : ILocalizationService
+        {
+            private readonly Dictionary<string, string> _localizationDictionary;
+
+            public SpanishLocalizationService()
+            {
+                _localizationDictionary = new Dictionary<string, string>()
+        {
+            { "greeting", "¡Hola, mundo!" },
+            { "farewell", "¡Adiós!" }
+        };
+            }
+
+            public string GetLocalizedString(string key)
+            {
+                return _localizationDictionary.ContainsKey(key) ? _localizationDictionary[key] : key;
+            }
+        }
+
+        public class LocalizationManager
+        {
+            private readonly ILocalizationService _localizationService;
+
+            public LocalizationManager(ILocalizationService localizationService)
+            {
+                _localizationService = localizationService;
+            }
+
+            public string GetLocalizedString(string key)
+            {
+                return _localizationService.GetLocalizedString(key);
+            }
+        }
+
+        // Usage:
+        var englishLocalizationService = new EnglishLocalizationService();
+        var spanishLocalizationService = new SpanishLocalizationService();
+
+        var localizationManager = new LocalizationManager(englishLocalizationService);
+        Console.WriteLine(localizationManager.GetLocalizedString("greeting")); // Output: Hello, world!
+
+        localizationManager = new LocalizationManager(spanishLocalizationService);
+        Console.WriteLine(localizationManager.GetLocalizedString("greeting")); // Output: ¡Hola, mundo!
+
+            //30:Date And Time
+            public interface IDateTimeProvider
+        {
+            DateTime GetCurrentDateTime();
+        }
+
+        public class SystemDateTimeProvider : IDateTimeProvider
+        {
+            public DateTime GetCurrentDateTime()
+            {
+                return DateTime.Now;
+            }
+        }
+
+        public class FixedDateTimeProvider : IDateTimeProvider
+        {
+            private readonly DateTime _fixedDateTime;
+
+            public FixedDateTimeProvider(DateTime fixedDateTime)
+            {
+                _fixedDateTime = fixedDateTime;
+            }
+
+            public DateTime GetCurrentDateTime()
+            {
+                return _fixedDateTime;
+            }
+        }
+
+        //31:Web Scraping 
+        //Web scraping refers to the extraction of data from a website.
+        public interface IWebScraper
+        {
+            Task<string> Scrape(string url);
+        }
+
+        public class DefaultWebScraper : IWebScraper
+        {
+            private readonly HttpClient _httpClient;
+
+            public DefaultWebScraper(HttpClient httpClient)
+            {
+                _httpClient = httpClient;
+            }
+
+            public async Task<string> Scrape(string url)
+            {
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                var html = await response.Content.ReadAsStringAsync();
+                return html;
+            }
+        }
+
+        public class CachedWebScraper : IWebScraper
+        {
+            private readonly IWebScraper _inner;
+            private readonly IDistributedCache _cache;
+
+            public CachedWebScraper(IWebScraper inner, IDistributedCache cache)
+            {
+                _inner = inner;
+                _cache = cache;
+            }
+
+            public async Task<string> Scrape(string url)
+            {
+                var cacheKey = $"web-scraper:{url}";
+                var cachedHtml = await _cache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cachedHtml))
+                {
+                    return cachedHtml;
+                }
+
+                var html = await _inner.Scrape(url);
+
+                await _cache.SetStringAsync(cacheKey, html, new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                });
+
+                return html;
+            }
+        }
+
+        //32:
+    }
+}
